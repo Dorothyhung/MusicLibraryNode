@@ -24,6 +24,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
             document.getElementById("artist").value = "";
             document.getElementById("album").value = "";
         }
+
+        $.ajax({
+            url:"/addSongs",
+            type: "POST",
+            data: JSON.stringify(newSong),
+            contentType:"application/json; char=utf-8",
+            success: function(result) {
+                console.log(result);
+            }
+        })
     })
 
     //View Library
@@ -56,6 +66,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 //create list and details to display
 function createList(listToCreate) {
+    $.get("/viewAll", function(data, status) {
+        songList = data;
+    })
+
     let list = document.getElementById(listToCreate);
     list.innerHTML = "";
     songList.forEach(function(element, i) {
@@ -73,10 +87,8 @@ function createList(listToCreate) {
         element.addEventListener("click", function() {
             var key = this.getAttribute("key");
             localStorage.setItem("key", key);
-            console.log(i + " " + key);
             document.location.href = "index.html#details";
-            let index = getArrayPointer(key);
-            getDetails(index)
+            getDetails()
         })
     })
 
@@ -92,6 +104,18 @@ function deleteSong(i) {
     songList.splice(i, 1);
     createList("myList");
     createList("myList2");
+
+    /* $.ajax({
+        type:"DELETE",
+        url:"/DeleteSong/" + ID,
+        success: function(result) {
+            alert(result);
+        },
+        error: function(xhr, textStatus,errorThrown) {
+            alert("Server could not delete Song with ID " + ID)
+        }
+    }); */
+
     document.location.href = "index.html#viewAll";
     
 }
@@ -106,7 +130,9 @@ function getArrayPointer(key) {
 }
 
 //Display details page
-function getDetails(i) {
+function getDetails() {
+    let key = localStorage.getItem('key');
+    let i = getArrayPointer(key);
     var details = document.getElementById("detailsList");
     details.innerHTML = "";
     var detailsName = document.createElement('li');
@@ -114,7 +140,7 @@ function getDetails(i) {
     var detailsArtist= document.createElement('li');
     detailsArtist.innerHTML = "Artist: " + songList[i].artist;
     var detailsAlbum= document.createElement('li');
-    detailsAlbum.innerHTML = "Album " + songList[i].album;
+    detailsAlbum.innerHTML = "Album: " + songList[i].album;
     details.appendChild(detailsName);
     details.appendChild(detailsArtist);
     details.appendChild(detailsAlbum);
