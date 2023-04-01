@@ -1,6 +1,43 @@
 var express = require('express');
 var router = express.Router();
 
+let serverArray = [];
+
+var SongObject = function (songname, artist, album) {
+  this.ID=Math.random().toString(16).slice(5);
+  this.songname=songname;
+  this.artist=artist;
+  this.album=album;
+}
+
+var fs = require("fs");
+
+let fileManager = {
+  read: function() {
+    var rawdata = fs.readFileSync('objectdata.json');
+    let goodData = JSON.parse(rawdata);
+    serverArray = goodData;
+  },
+
+  write: function() {
+    let data = JSON.stringify(serverArray);
+    fs.writeFileSync('objectdata.json', data);
+  }, 
+
+  validData: function() {
+    var rawdata = fs.readFileSync('objectdata.json');
+    if(rawdata.length < 1) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+};
+
+if(!fileManager.validData()) {
+  fileManager.write();
+}
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
@@ -9,38 +46,22 @@ router.get('/', function(req, res, next) {
 const songs = [];
 
 // POST route to add a new song
-router.post('/songs', (req, res) => {
-  const { title, artist, album } = req.body;
-  if (!title || !artist || !album) {
-    return res.status(400).json({ error: 'Please provide title, artist, and album for the song.' });
-  }
-  const newSong = { title, artist, album };
-  songs.push(newSong);
-  res.status(201).json(newSong);
+router.post('/AddSongs', function(req, res) {
+  const newSong = req.body;
+  console.log("Post " +newSong);
+  serverArray.push(newSong);
+  fileManager.write();
+  res.status(200).json(newSong);
 });
+
 
 // GET route to retrieve all songs
-router.get('/songs', (req, res) => {
-  res.json(songs);
+router.get('/GetAllSongs', function(req, res, next) {
+  console.log(req.body);
+  fileManager.read();
+  res.status(200).json(serverArray);
+ 
 });
 
-module.exports = router;
-
-
-/* app.get('/viewAll', function(req, res){
-  res.send('Data sent successfully!');
-});
-
-app.post('/addSongs', function(req, res){
-  res.send('Data received successfully!');
-}); */
-
-/* app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/index.html");
-});
-
-app.listen(3000, function () {
-  console.log("Server is running on localhost3000");
-}); */
 
 module.exports = router;

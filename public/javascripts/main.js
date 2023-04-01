@@ -7,10 +7,10 @@ var Song = function (songname, artist, album) {
     this.album=album;
 }
 
-document.addEventListener("DOMContentLoaded", function(event) {
+$(document).ready(function() {
     //Add to Library
-    this.getElementById("add").addEventListener("click", function() {
-        let songname = document.getElementById("songname").value
+    $('#add').click(function() {
+        /*let songname = document.getElementById("songname").value
         let artist = document.getElementById("artist").value
         let album = document.getElementById("album").value
         if((songname == "") || (artist == "") || (album == "")) {
@@ -23,17 +23,36 @@ document.addEventListener("DOMContentLoaded", function(event) {
             document.getElementById("songname").value = "";
             document.getElementById("artist").value = "";
             document.getElementById("album").value = "";
-        }
+        }*/
+
+        let newSong = new Song(
+            document.getElementById("songname").value,
+            document.getElementById("artist").value,
+            document.getElementById("album").value,
+        );
+        songList.push(newSong);
+        console.log(newSong);
 
         $.ajax({
-            url:"/addSongs",
+            url:"/AddSongs",
             type: "POST",
             data: JSON.stringify(newSong),
             contentType:"application/json; char=utf-8",
             success: function(result) {
                 console.log(result);
+                document.location.href = "index.html#ViewAll"
             }
-        })
+        });
+
+        document.getElementById("added").value = (songname + ' by ' + artist + ' successfully added to Library!');
+        document.getElementById("songname").value = "";
+        document.getElementById("artist").value = "";
+        document.getElementById("album").value = "";
+
+        /* $.get(songname, function(data, status) {
+            console.log(data);
+            alert(status);
+        });*/
     })
 
     //View Library
@@ -66,8 +85,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 //create list and details to display
 function createList(listToCreate) {
-    $.get("/viewAll", function(data, status) {
-        songList = data;
+    $.get("/getAllSongs", function(listToCreate, status) {
+        songList = listToCreate;
+        console.log(status);
     })
 
     let list = document.getElementById(listToCreate);
